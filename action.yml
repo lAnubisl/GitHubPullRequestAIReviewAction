@@ -1,0 +1,86 @@
+name: Pull Request Copilot Review
+description: Review pull request changes with the GitHub Copilot SDK for .NET.
+
+branding:
+  icon: message-square
+  color: blue
+
+inputs:
+  review_mode:
+    description: Publish a summary comment, inline comments, or both. Allowed values: summary, comments, summary-and-comments.
+    required: false
+    default: summary-and-comments
+  max_findings:
+    description: Maximum number of review findings to publish.
+    required: false
+    default: "10"
+  min_severity:
+    description: Lowest severity to publish. Allowed values: low, medium, high.
+    required: false
+    default: low
+  include_file_context:
+    description: Include surrounding checked-out source lines around changed hunks in the AI prompt.
+    required: false
+    default: "true"
+  file_context_lines:
+    description: Number of local source context lines around changed hunks.
+    required: false
+    default: "4"
+  exclude_paths:
+    description: Optional comma-separated paths or globs to ignore.
+    required: false
+    default: ""
+  copilot_model:
+    description: Optional model name passed to the GitHub Copilot SDK.
+    required: false
+    default: ""
+  copilot_extra_instructions:
+    description: Optional extra reviewer instructions added to the prompt.
+    required: false
+    default: ""
+  fail_on_findings:
+    description: Exit non-zero when findings matching min_severity are returned.
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Mask review tokens
+      shell: bash
+      env:
+        GH_CLI_TOKEN: ${{ env.GH_CLI_TOKEN }}
+        COPILOT_GITHUB_TOKEN: ${{ env.COPILOT_GITHUB_TOKEN }}
+        COPILOT_CLI_TOKEN: ${{ env.COPILOT_CLI_TOKEN }}
+      run: |
+        if [ -n "${GH_CLI_TOKEN:-}" ]; then
+          echo "::add-mask::$GH_CLI_TOKEN"
+        fi
+        if [ -n "${COPILOT_GITHUB_TOKEN:-}" ]; then
+          echo "::add-mask::$COPILOT_GITHUB_TOKEN"
+        fi
+        if [ -n "${COPILOT_CLI_TOKEN:-}" ]; then
+          echo "::add-mask::$COPILOT_CLI_TOKEN"
+        fi
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Run pull request review
+      shell: bash
+      env:
+        INPUT_REVIEW_MODE: ${{ inputs.review_mode }}
+        INPUT_MAX_FINDINGS: ${{ inputs.max_findings }}
+        INPUT_MIN_SEVERITY: ${{ inputs.min_severity }}
+        INPUT_INCLUDE_FILE_CONTEXT: ${{ inputs.include_file_context }}
+        INPUT_FILE_CONTEXT_LINES: ${{ inputs.file_context_lines }}
+        INPUT_EXCLUDE_PATHS: ${{ inputs.exclude_paths }}
+        INPUT_COPILOT_MODEL: ${{ inputs.copilot_model }}
+        INPUT_COPILOT_EXTRA_INSTRUCTIONS: ${{ inputs.copilot_extra_instructions }}
+        INPUT_FAIL_ON_FINDINGS: ${{ inputs.fail_on_findings }}
+        GH_CLI_TOKEN: ${{ env.GH_CLI_TOKEN }}
+        COPILOT_GITHUB_TOKEN: ${{ env.COPILOT_GITHUB_TOKEN }}
+        COPILOT_CLI_TOKEN: ${{ env.COPILOT_CLI_TOKEN }}
+      run: dotnet run --project "$GITHUB_ACTION_PATH/src/PullRequestCopilotReview/PullRequestCopilotReview.csproj" --configuration Release --no-launch-profile

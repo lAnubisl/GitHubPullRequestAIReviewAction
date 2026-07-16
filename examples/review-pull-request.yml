@@ -1,0 +1,26 @@
+name: AI Pull Request Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  ai-review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: your-org/pull-request-copilot-review@v1
+        with:
+          review_mode: summary-and-comments
+          min_severity: medium
+          max_findings: 10
+        env:
+          GH_CLI_TOKEN: ${{ secrets.GH_CLI_TOKEN }}
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
