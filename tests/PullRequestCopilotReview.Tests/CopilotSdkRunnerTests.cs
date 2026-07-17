@@ -7,7 +7,7 @@ namespace PullRequestCopilotReview.Tests;
 
 public sealed class CopilotSdkRunnerTests
 {
-    private static readonly PullRequestFile[] Files = [new("src/App.cs", "modified", 1, 0, "@@ -41 +42 @@\n+code", new DiffParser().Parse("@@ -41 +42 @@\n+code"), null)];
+    private static readonly PullRequestFile[] Files = [new("src/App.cs", "modified", 1, 0, "@@ -41 +42 @@\n+code", new DiffParser().Parse("@@ -41 +42 @@\n+code"))];
 
     [Fact]
     public async Task Builds_an_empty_mode_streaming_sdk_session_with_persistence_disabled()
@@ -86,6 +86,6 @@ public sealed class CopilotSdkRunnerTests
 
     private sealed class Configuration : IConfigurationHelper
     {
-        public int MaxFindings => 10; public string MinSeverity => "low"; public bool IncludeFileContext => false; public int FileContextLines => 0; public IReadOnlyList<string> ExcludePaths => []; public string? CopilotModel => null; public string? CopilotExtraInstructions => null; public bool FailOnFindings => false; public string GitHubToken => "github-token"; public string CopilotToken => "copilot-token"; public string Repository => "owner/repo"; public string EventPath => "event.json"; public string Workspace => Environment.CurrentDirectory; public string? StepSummaryPath => null;
+        public int MaxFindings => 10; public string MinSeverity => "low"; public IReadOnlyList<string> ExcludePaths => []; public string? CopilotModel => null; public string? CopilotExtraInstructions => null; public bool FailOnFindings => false; public string GitHubToken => "github-token"; public string CopilotToken => "copilot-token"; public string Repository => "owner/repo"; public string EventPath => "event.json"; public string Workspace => Environment.CurrentDirectory; public string? StepSummaryPath => null;
     }
 }

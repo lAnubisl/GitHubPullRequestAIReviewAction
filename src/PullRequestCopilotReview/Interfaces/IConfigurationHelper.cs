@@ -4,8 +4,6 @@ public interface IConfigurationHelper
 {
     int MaxFindings { get; }
     string MinSeverity { get; }
-    bool IncludeFileContext { get; }
-    int FileContextLines { get; }
     IReadOnlyList<string> ExcludePaths { get; }
     string? CopilotModel { get; }
     string? CopilotExtraInstructions { get; }

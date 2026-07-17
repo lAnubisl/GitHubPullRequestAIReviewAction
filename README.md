@@ -64,8 +64,6 @@ The reviewer does not modify files, create commits, push branches, or create pul
 | --- | --- | --- |
 | `max_findings` | `10` | Maximum number of findings to publish. |
 | `min_severity` | `low` | Lowest severity to publish: `low`, `medium`, or `high`. |
-| `include_file_context` | `true` | Include surrounding checked-out source lines around changed hunks. |
-| `file_context_lines` | `4` | Number of local context lines around changed hunks. |
 | `exclude_paths` | empty | Comma-separated paths or globs to ignore. |
 | `copilot_model` | empty | Optional Copilot model name. |
 | `copilot_extra_instructions` | empty | Optional extra reviewer instructions. |
@@ -76,7 +74,7 @@ The reviewer does not modify files, create commits, push branches, or create pul
 The action:
 
 1. Validates inputs and reads the pull request event.
-2. Fetches changed-file patches through the GitHub CLI and optionally adds local source context.
+2. Fetches changed-file patches through the GitHub CLI.
 3. Builds a review-only prompt that requires one machine-readable JSON document.
 4. Creates a GitHub Copilot SDK client in `Empty` mode with `GITHUB_WORKSPACE`—the checked-out pull request revision—as its working directory.
 5. Starts one streaming session and subscribes to the SDK's strongly typed session events. See [GitHub's streaming-events guide](https://docs.github.com/en/copilot/how-tos/copilot-sdk/features/streaming-events#subscribing-to-events).

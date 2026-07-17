@@ -14,14 +14,6 @@ inputs:
     description: "Lowest severity to publish. Allowed values: low, medium, high."
     required: false
     default: low
-  include_file_context:
-    description: Include surrounding checked-out source lines around changed hunks in the AI prompt.
-    required: false
-    default: "true"
-  file_context_lines:
-    description: Number of local source context lines around changed hunks.
-    required: false
-    default: "4"
   exclude_paths:
     description: Optional comma-separated paths or globs to ignore.
     required: false
@@ -69,8 +61,6 @@ runs:
       env:
         INPUT_MAX_FINDINGS: ${{ inputs.max_findings }}
         INPUT_MIN_SEVERITY: ${{ inputs.min_severity }}
-        INPUT_INCLUDE_FILE_CONTEXT: ${{ inputs.include_file_context }}
-        INPUT_FILE_CONTEXT_LINES: ${{ inputs.file_context_lines }}
         INPUT_EXCLUDE_PATHS: ${{ inputs.exclude_paths }}
         INPUT_COPILOT_MODEL: ${{ inputs.copilot_model }}
         INPUT_COPILOT_EXTRA_INSTRUCTIONS: ${{ inputs.copilot_extra_instructions }}

@@ -54,8 +54,6 @@ public sealed class RealCopilotSdkSmokeTests
     {
         public int MaxFindings => 1;
         public string MinSeverity => "low";
-        public bool IncludeFileContext => false;
-        public int FileContextLines => 0;
         public IReadOnlyList<string> ExcludePaths => Array.Empty<string>();
         public string? CopilotModel => null;
         public string? CopilotExtraInstructions => null;

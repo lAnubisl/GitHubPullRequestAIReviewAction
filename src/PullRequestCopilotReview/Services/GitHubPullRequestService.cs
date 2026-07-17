@@ -9,20 +9,17 @@ public sealed class GitHubPullRequestService : IGitHubPullRequestService
     private readonly ICommandRunner _commandRunner;
     private readonly IConfigurationHelper _configuration;
     private readonly IDiffParser _diffParser;
-    private readonly ILocalFileContextReader _localFileContextReader;
     private readonly ILogger _logger;
 
     public GitHubPullRequestService(
         ICommandRunner commandRunner,
         IConfigurationHelper configuration,
         IDiffParser diffParser,
-        ILocalFileContextReader localFileContextReader,
         ILogger logger)
     {
         _commandRunner = commandRunner;
         _configuration = configuration;
         _diffParser = diffParser;
-        _localFileContextReader = localFileContextReader;
         _logger = logger;
     }
 
@@ -61,18 +58,13 @@ public sealed class GitHubPullRequestService : IGitHubPullRequestService
         {
             var patch = Truncate(file.Patch, 120_000);
             var hunks = _diffParser.Parse(patch).ToArray();
-            var localContext = _configuration.IncludeFileContext
-                ? _localFileContextReader.Read(_configuration.Workspace, file.FileName ?? string.Empty, hunks, _configuration.FileContextLines)
-                : null;
-
             return new PullRequestFile(
                 file.FileName ?? string.Empty,
                 file.Status ?? "modified",
                 file.Additions,
                 file.Deletions,
                 patch,
-                hunks,
-                localContext);
+                hunks);
         }).ToArray();
     }
 

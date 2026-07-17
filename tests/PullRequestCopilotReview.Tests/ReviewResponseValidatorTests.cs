@@ -6,7 +6,7 @@ namespace PullRequestCopilotReview.Tests;
 public sealed class ReviewResponseValidatorTests
 {
     private readonly ReviewResponseValidator _validator = new();
-    private static readonly PullRequestFile File = new("src/App.cs", "modified", 1, 0, "@@ -11 +12 @@\n+code", new DiffParser().Parse("@@ -11 +12 @@\n+code"), null);
+    private static readonly PullRequestFile File = new("src/App.cs", "modified", 1, 0, "@@ -11 +12 @@\n+code", new DiffParser().Parse("@@ -11 +12 @@\n+code"));
 
     [Fact]
     public void Accepts_a_structurally_and_semantically_valid_document()

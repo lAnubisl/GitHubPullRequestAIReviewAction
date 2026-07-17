@@ -15,8 +15,6 @@ public sealed class ConfigurationHelper : IConfigurationHelper
     {
         MaxFindings = ParseIntActionInput("max_findings", 10, min: 0, max: 100);
         MinSeverity = ParseMinSeverity();
-        IncludeFileContext = ParseBoolActionInput("include_file_context", true);
-        FileContextLines = ParseIntActionInput("file_context_lines", 4, min: 0, max: 50);
         ExcludePaths = SplitCsv(GetActionInput("exclude_paths"));
         CopilotModel = EmptyToNull(GetActionInput("copilot_model"));
         CopilotExtraInstructions = EmptyToNull(GetActionInput("copilot_extra_instructions"));
@@ -31,8 +29,6 @@ public sealed class ConfigurationHelper : IConfigurationHelper
 
     public int MaxFindings { get; }
     public string MinSeverity { get; }
-    public bool IncludeFileContext { get; }
-    public int FileContextLines { get; }
     public IReadOnlyList<string> ExcludePaths { get; }
     public string? CopilotModel { get; }
     public string? CopilotExtraInstructions { get; }

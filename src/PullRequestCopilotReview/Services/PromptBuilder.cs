@@ -72,14 +72,6 @@ public sealed class PromptBuilder : IPromptBuilder
             builder.AppendLine(file.Patch ?? "[No textual patch available; file may be binary, renamed, or too large.]");
             builder.AppendLine("```");
 
-            if (!string.IsNullOrWhiteSpace(file.LocalContext))
-            {
-                builder.AppendLine("local source context:");
-                builder.AppendLine("```");
-                builder.AppendLine(file.LocalContext);
-                builder.AppendLine("```");
-            }
-
             if (builder.Length > MaxPromptCharacters)
             {
                 builder.AppendLine();

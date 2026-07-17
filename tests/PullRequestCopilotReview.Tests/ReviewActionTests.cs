@@ -15,8 +15,6 @@ public sealed class ReviewActionTests
         "COPILOT_CLI_TOKEN",
         "INPUT_MAX_FINDINGS",
         "INPUT_MIN_SEVERITY",
-        "INPUT_INCLUDE_FILE_CONTEXT",
-        "INPUT_FILE_CONTEXT_LINES",
         "INPUT_EXCLUDE_PATHS",
         "INPUT_COPILOT_MODEL",
         "INPUT_COPILOT_EXTRA_INSTRUCTIONS",
@@ -47,8 +45,6 @@ public sealed class ReviewActionTests
     [Theory]
     [InlineData("INPUT_MAX_FINDINGS", "not-a-number", "max_findings")]
     [InlineData("INPUT_MIN_SEVERITY", "critical", "min_severity")]
-    [InlineData("INPUT_INCLUDE_FILE_CONTEXT", "sometimes", "include_file_context")]
-    [InlineData("INPUT_FILE_CONTEXT_LINES", "51", "file_context_lines")]
     [InlineData("INPUT_FAIL_ON_FINDINGS", "yes", "fail_on_findings")]
     public void Validates_action_inputs_during_creation(string name, string value, string expectedMessage)
     {
@@ -155,7 +151,7 @@ public sealed class ReviewActionTests
         var context = TestContext();
         var files = new[]
         {
-            TestFile("src/App.cs", "@@ -1 +1,2 @@\n class App\n+throw null;", "1: class App")
+            TestFile("src/App.cs", "@@ -1 +1,2 @@\n class App\n+throw null;")
         };
 
         var prompt = new PromptBuilder(configuration).Build(context, files);
@@ -198,7 +194,7 @@ public sealed class ReviewActionTests
     {
         var longPatch = "@@ -1 +1 @@\n+" + new string('x', 130_000);
         var runner = new FakeCommandRunner(new CommandResult(0, $$"""[[{"filename":"src/Big.cs","status":"modified","additions":1,"deletions":0,"patch":{{JsonString(longPatch)}}}]]""", string.Empty));
-        var configuration = TestConfiguration(includeContext: false);
+        var configuration = TestConfiguration();
         var service = PullRequestService(runner, configuration);
 
         var files = await service.GetChangedFilesAsync(TestContext());
@@ -217,7 +213,7 @@ public sealed class ReviewActionTests
             $$"""[[{"filename":"src/App.cs","status":"modified","additions":2,"deletions":1,"patch":{{JsonString(patch)}}},{"filename":"README.md","status":"modified","additions":1,"deletions":0,"patch":"@@ -1 +1 @@\n+docs"}]]""",
             string.Empty));
         var logger = new FakeTextLogger();
-        var service = PullRequestService(runner, TestConfiguration(includeContext: false), logger);
+        var service = PullRequestService(runner, TestConfiguration(), logger);
 
         await service.GetChangedFilesAsync(TestContext());
 
@@ -336,7 +332,6 @@ public sealed class ReviewActionTests
             [new ReviewFinding("high", "src/App.cs", 2, "Bug", "Fix it.", "high")]);
         var configuration = TestConfiguration(
             minSeverity: "medium",
-            includeContext: false,
             eventPath: eventPath,
             workspace: temp.Root,
             failOnFindings: true);
@@ -361,7 +356,6 @@ public sealed class ReviewActionTests
 
     private static IConfigurationHelper TestConfiguration(
         string minSeverity = "low",
-        bool includeContext = true,
         int maxFindings = 10,
         string? eventPath = null,
         string? workspace = null,
@@ -377,8 +371,6 @@ public sealed class ReviewActionTests
             ["COPILOT_GITHUB_TOKEN"] = copilotToken,
             ["INPUT_MAX_FINDINGS"] = maxFindings.ToString(),
             ["INPUT_MIN_SEVERITY"] = minSeverity,
-            ["INPUT_INCLUDE_FILE_CONTEXT"] = includeContext.ToString(),
-            ["INPUT_FILE_CONTEXT_LINES"] = "4",
             ["INPUT_COPILOT_MODEL"] = copilotModel,
             ["INPUT_COPILOT_EXTRA_INSTRUCTIONS"] = extraInstructions,
             ["INPUT_FAIL_ON_FINDINGS"] = failOnFindings.ToString(),
@@ -434,14 +426,14 @@ public sealed class ReviewActionTests
     private static PullRequestContext TestContext()
         => new("owner/repo", 7, "main", "base-sha", "feature", "head-sha");
 
-    private static PullRequestFile TestFile(string fileName, string patch, string? localContext = null)
-        => new(fileName, "modified", 1, 0, patch, new DiffParser().Parse(patch), localContext);
+    private static PullRequestFile TestFile(string fileName, string patch)
+        => new(fileName, "modified", 1, 0, patch, new DiffParser().Parse(patch));
 
     private static GitHubPullRequestService PullRequestService(
         ICommandRunner runner,
         IConfigurationHelper configuration,
         ILogger? logger = null)
-        => new(runner, configuration, new DiffParser(), new LocalFileContextReader(), logger ?? new FakeTextLogger());
+        => new(runner, configuration, new DiffParser(), logger ?? new FakeTextLogger());
 
     private static CopilotSdkRunner CopilotRunner(ICopilotSdkClient client, IConfigurationHelper configuration)
         => new(client, configuration, new ReviewResponseValidator(), new CopilotSessionEventLogger(null));

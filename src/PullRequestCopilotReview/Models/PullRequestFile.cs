@@ -6,5 +6,4 @@ public sealed record PullRequestFile(
     int Additions,
     int Deletions,
     string? Patch,
-    IReadOnlyList<DiffHunk> Hunks,
-    string? LocalContext);
+    IReadOnlyList<DiffHunk> Hunks);
