@@ -124,7 +124,7 @@ Markdown fences, leading or trailing prose, comments, trailing commas, missing f
 
 ### Logging and failure behavior
 
-Reasoning events and tool-result payloads are not logged. Every prompt sent to the Copilot session, including validation-repair prompts, is logged in full. Streaming deltas are counted rather than printed chunk by chunk. Complete root assistant messages are logged once so the detailed JSON review remains visible in the action log, along with model, tool-request, and token-usage metadata. Streamed events never select the response or change session success.
+Reasoning events and tool-result payloads are not logged. Every prompt sent to the Copilot session, including validation-repair prompts, is logged in full. Streaming deltas are counted rather than printed chunk by chunk. Complete root assistant messages are logged once so the detailed JSON review remains visible in the action log, along with model, tool-request, and token-usage metadata. Tool activity is described in human-readable terms, including inspected paths and search patterns; failures include bounded SDK error details. Messages that request tools are labeled as intermediate so they are not confused with the final response. Streamed events never select the response or change session success.
 
 Assistant responses can quote repository source code. Anyone with access to the GitHub Actions logs may therefore see source excerpts included in those responses.
 
