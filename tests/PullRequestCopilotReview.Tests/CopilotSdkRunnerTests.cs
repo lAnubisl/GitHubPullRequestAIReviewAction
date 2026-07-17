@@ -33,17 +33,20 @@ public sealed class CopilotSdkRunnerTests
         Assert.Equal("Review complete.", result.Summary);
         Assert.Single(result.Findings);
         Assert.Single(sdk.Prompts);
+        Assert.Contains(logger.InfoMessages, message => message == $"Copilot SDK prompt 1:{Environment.NewLine}review");
     }
 
     [Fact]
     public async Task Repairs_an_invalid_response_in_the_same_session()
     {
+        var logger = new FakeTextLogger();
         var sdk = new FakeCopilotSdkClient([Message("```json\n{}\n```"), Message(ValidJson())]);
-        var result = await Runner(sdk, new Configuration()).RunReviewAsync("review", Files);
+        var result = await Runner(sdk, new Configuration(), logger).RunReviewAsync("review", Files);
         Assert.Equal("Review complete.", result.Summary);
         Assert.Equal(1, sdk.CreatedSessionCount);
         Assert.Equal(2, sdk.Prompts.Count);
         Assert.Contains("complete replacement JSON document", sdk.Prompts[1]);
+        Assert.Contains(logger.InfoMessages, message => message == $"Copilot SDK prompt 2:{Environment.NewLine}{sdk.Prompts[1]}");
     }
 
     [Fact]

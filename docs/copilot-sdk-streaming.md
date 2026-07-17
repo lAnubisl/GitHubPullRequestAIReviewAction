@@ -10,7 +10,7 @@ The session uses `Streaming = true`, but `SessionEvent` handling is logging-only
 
 Each returned response must pass strict JSON parsing, the embedded `review-result.schema.json`, strict DTO deserialization, and semantic location validation. Every finding must name a safe repository-relative changed file and a right-side commentable line from a parsed diff hunk. Deleted-only lines, binary files, and patchless files are rejected.
 
-The first request uses the review prompt. On a validation error, the reviewer sends a correction prompt in the same session that lists bounded actionable errors and requires a complete replacement JSON document with no Markdown, prose, or patches. There are at most three total attempts. The final validation failure fails closed before summary or review publication.
+The first request uses the review prompt. On a validation error, the reviewer sends a correction prompt in the same session that lists bounded actionable errors and requires a complete replacement JSON document with no Markdown, prose, or patches. Every prompt is logged in full immediately before it is sent. There are at most three total attempts. The final validation failure fails closed before summary or review publication.
 
 ## Security boundary
 

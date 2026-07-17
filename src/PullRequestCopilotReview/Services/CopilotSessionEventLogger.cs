@@ -11,6 +11,9 @@ public sealed class CopilotSessionEventLogger : ICopilotSessionEventLogger
 
     public CopilotSessionEventLogger(ILogger? logger) => _logger = logger;
 
+    public void LogPrompt(int attempt, string prompt)
+        => _logger?.Info($"Copilot SDK prompt {attempt}:{Environment.NewLine}{prompt}");
+
     public void Handle(SessionEvent evt)
     {
         switch (evt)

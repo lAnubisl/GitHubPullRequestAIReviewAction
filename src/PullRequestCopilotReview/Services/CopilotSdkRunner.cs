@@ -59,6 +59,7 @@ public sealed class CopilotSdkRunner : ICopilotRunner
         IReadOnlyList<string> errors = Array.Empty<string>();
         for (int attempt = 1; attempt <= MaximumAttempts; attempt++)
         {
+            _eventLogger.LogPrompt(attempt, attemptPrompt);
             var response = await session.SendAndWaitAsync(attemptPrompt, cancellationToken);
             if (response is null)
             {
