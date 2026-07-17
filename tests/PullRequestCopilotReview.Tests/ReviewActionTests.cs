@@ -172,6 +172,25 @@ public sealed class ReviewActionTests
         Assert.Contains("Focus on auth boundaries.", prompt);
         Assert.Contains("src/App.cs", prompt);
         Assert.Contains("throw null", prompt);
+        Assert.Contains("The first character of your response must be { and the last character must be }", prompt);
+        Assert.Contains("do not start with ```json or end with ```", prompt);
+        Assert.EndsWith($"Begin your response now with {{.{Environment.NewLine}", prompt);
+        Assert.True(
+            prompt.LastIndexOf("FINAL RESPONSE CONTRACT", StringComparison.Ordinal) >
+            prompt.LastIndexOf("throw null", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Preserves_final_response_contract_when_prompt_is_truncated()
+    {
+        var prompt = new PromptBuilder(TestConfiguration()).Build(
+            TestContext(),
+            [TestFile("src/Big.cs", "@@ -1 +1 @@\n+" + new string('x', 250_000))]);
+
+        Assert.Equal(240_000, prompt.Length);
+        Assert.Contains("[prompt truncated]", prompt);
+        Assert.Contains("FINAL RESPONSE CONTRACT (mandatory):", prompt);
+        Assert.EndsWith($"Begin your response now with {{.{Environment.NewLine}", prompt);
     }
 
     [Fact]

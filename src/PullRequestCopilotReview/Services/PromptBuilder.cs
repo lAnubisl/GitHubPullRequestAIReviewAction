@@ -7,6 +7,7 @@ namespace PullRequestCopilotReview.Services;
 public sealed class PromptBuilder : IPromptBuilder
 {
     private const int MaxPromptCharacters = 240_000;
+    private const string TruncationMarker = "\n[prompt truncated]\n";
     private readonly IConfigurationHelper _configuration;
 
     public PromptBuilder(IConfigurationHelper configuration)
@@ -87,9 +88,14 @@ public sealed class PromptBuilder : IPromptBuilder
             }
         }
 
-        return builder.Length <= MaxPromptCharacters
-            ? builder.ToString()
-            : builder.ToString(0, MaxPromptCharacters) + "\n[prompt truncated]";
+        var responseContract = BuildFinalResponseContract();
+        if (builder.Length + responseContract.Length <= MaxPromptCharacters)
+        {
+            return builder.Append(responseContract).ToString();
+        }
+
+        var retainedPromptLength = MaxPromptCharacters - TruncationMarker.Length - responseContract.Length;
+        return builder.ToString(0, retainedPromptLength) + TruncationMarker + responseContract;
     }
 
     private static void AppendResponseExamples(StringBuilder builder)
@@ -104,5 +110,18 @@ public sealed class PromptBuilder : IPromptBuilder
         builder.AppendLine("""
             {"summary":"The change introduces a possible null dereference.","findings":[{"severity":"high","file":"src/Example.cs","line":42,"title":"Guard the nullable value","body":"The value can be null on this path and is dereferenced immediately, which can fail at runtime. Check it for null before use or make the invariant explicit.","confidence":"high"}]}
             """);
+    }
+
+    private static string BuildFinalResponseContract()
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine();
+        builder.AppendLine("FINAL RESPONSE CONTRACT (mandatory):");
+        builder.AppendLine("Return exactly one JSON object matching the required structure and nothing else.");
+        builder.AppendLine("The first character of your response must be { and the last character must be }. Do not put whitespace, prose, or Markdown before or after the object.");
+        builder.AppendLine("Never wrap the response in a Markdown code fence. In particular, do not start with ```json or end with ```.");
+        builder.AppendLine("Backticks may appear inside JSON string values when needed, but must never delimit the response.");
+        builder.AppendLine("Begin your response now with {.");
+        return builder.ToString();
     }
 }
