@@ -187,6 +187,26 @@ public sealed class ReviewActionTests
     }
 
     [Fact]
+    public async Task Logs_a_short_summary_of_changed_files_instead_of_streaming_the_response()
+    {
+        const string patch = "@@ -1 +1,3 @@\n-old\n+new\n+more";
+        var runner = new FakeCommandRunner(new CommandResult(
+            0,
+            $$"""[[{"filename":"src/App.cs","status":"modified","additions":2,"deletions":1,"patch":{{JsonString(patch)}}},{"filename":"README.md","status":"modified","additions":1,"deletions":0,"patch":"@@ -1 +1 @@\n+docs"}]]""",
+            string.Empty));
+        var logger = new FakeTextLogger();
+        var service = PullRequestService(runner, TestConfiguration(includeContext: false), logger);
+
+        await service.GetChangedFilesAsync(TestContext());
+
+        Assert.Equal(CommandOutputLogging.CaptureOnly, Assert.Single(runner.Calls).StandardOutputLogging);
+        Assert.Contains("Received 2 changed pull request file(s):", logger.InfoMessages);
+        Assert.Contains("- src/App.cs: 3 change(s)", logger.InfoMessages);
+        Assert.Contains("- README.md: 1 change(s)", logger.InfoMessages);
+        Assert.DoesNotContain(logger.InfoMessages, message => message.Contains(patch, StringComparison.Ordinal));
+    }
+
+    [Fact]
     public void Excludes_paths_by_glob()
     {
         var files = new[]
@@ -376,8 +396,11 @@ public sealed class ReviewActionTests
     private static PullRequestFile TestFile(string fileName, string patch, string? localContext = null)
         => new(fileName, "modified", 1, 0, patch, new DiffParser().Parse(patch), localContext);
 
-    private static GitHubPullRequestService PullRequestService(ICommandRunner runner, IConfigurationHelper configuration)
-        => new(runner, configuration, new DiffParser(), new LocalFileContextReader());
+    private static GitHubPullRequestService PullRequestService(
+        ICommandRunner runner,
+        IConfigurationHelper configuration,
+        ILogger? logger = null)
+        => new(runner, configuration, new DiffParser(), new LocalFileContextReader(), logger ?? new FakeTextLogger());
 
     private static CopilotSdkRunner CopilotRunner(ICopilotSdkClient client, IConfigurationHelper configuration)
         => new(client, configuration, new ReviewResponseValidator(), new CopilotSessionEventLogger(null));

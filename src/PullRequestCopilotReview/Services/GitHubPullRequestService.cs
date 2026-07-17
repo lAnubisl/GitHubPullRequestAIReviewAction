@@ -10,13 +10,20 @@ public sealed class GitHubPullRequestService : IGitHubPullRequestService
     private readonly IConfigurationHelper _configuration;
     private readonly IDiffParser _diffParser;
     private readonly ILocalFileContextReader _localFileContextReader;
+    private readonly ILogger _logger;
 
-    public GitHubPullRequestService(ICommandRunner commandRunner, IConfigurationHelper configuration, IDiffParser diffParser, ILocalFileContextReader localFileContextReader)
+    public GitHubPullRequestService(
+        ICommandRunner commandRunner,
+        IConfigurationHelper configuration,
+        IDiffParser diffParser,
+        ILocalFileContextReader localFileContextReader,
+        ILogger logger)
     {
         _commandRunner = commandRunner;
         _configuration = configuration;
         _diffParser = diffParser;
         _localFileContextReader = localFileContextReader;
+        _logger = logger;
     }
 
     public async Task<IReadOnlyList<PullRequestFile>> GetChangedFilesAsync(
@@ -34,7 +41,8 @@ public sealed class GitHubPullRequestService : IGitHubPullRequestService
                     "--slurp"
                 },
                 GitHubEnvironment(),
-                WorkingDirectory: _configuration.Workspace),
+                WorkingDirectory: _configuration.Workspace,
+                StandardOutputLogging: CommandOutputLogging.CaptureOnly),
             cancellationToken);
 
         if (result.ExitCode != 0)
@@ -43,6 +51,12 @@ public sealed class GitHubPullRequestService : IGitHubPullRequestService
         }
 
         var dto = ParseFiles(result.StandardOutput);
+        _logger.Info($"Received {dto.Count} changed pull request file(s):");
+        foreach (var file in dto)
+        {
+            _logger.Info($"- {file.FileName ?? string.Empty}: {file.Additions + file.Deletions} change(s)");
+        }
+
         return dto.Select(file =>
         {
             var patch = Truncate(file.Patch, 120_000);
