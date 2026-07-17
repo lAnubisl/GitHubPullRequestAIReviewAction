@@ -27,6 +27,9 @@ public sealed class PullRequestReviewApp : IReviewApplication
             _secretMasker.Mask(_configuration.GitHubToken, _configuration.CopilotToken);
             var context = _contextReader.Read();
             _logger.Info($"Reviewing {context.Repository} pull request #{context.PullRequestNumber}.");
+            var gitMetadataPath = Path.Combine(_configuration.Workspace, ".git");
+            var checkoutDetected = Directory.Exists(gitMetadataPath) || File.Exists(gitMetadataPath);
+            _logger.Info($"Copilot repository workspace: {_configuration.Workspace} (Git checkout metadata detected: {checkoutDetected.ToString().ToLowerInvariant()}; expected pull request HEAD: {context.HeadSha}).");
             var files = await _pullRequestService.GetChangedFilesAsync(context, cancellationToken);
             var filteredFiles = _pathFilter.Apply(files, _configuration.ExcludePaths);
             var review = await _copilotRunner.RunReviewAsync(_promptBuilder.Build(context, filteredFiles), filteredFiles, cancellationToken);

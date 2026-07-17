@@ -157,6 +157,11 @@ public sealed class ReviewActionTests
         var prompt = new PromptBuilder(configuration).Build(context, files);
 
         Assert.Contains("senior code reviewer", prompt);
+        Assert.Contains($"The authoritative absolute checkout root is: {configuration.Workspace}", prompt);
+        Assert.Contains("use the authoritative root or an exact path beneath it", prompt);
+        Assert.Contains("do not search `.`", prompt);
+        Assert.Contains("finding file paths must remain repository-relative", prompt);
+        Assert.DoesNotContain("Review only the PR changes shown in this prompt", prompt);
         Assert.Contains("Do not create, modify, move, or delete files", prompt);
         Assert.Contains("research public documentation on the web", prompt);
         Assert.Contains("Expected JSON structure:", prompt);
