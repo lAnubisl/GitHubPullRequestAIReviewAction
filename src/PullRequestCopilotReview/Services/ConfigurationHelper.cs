@@ -4,13 +4,6 @@ namespace PullRequestCopilotReview.Services;
 
 public sealed class ConfigurationHelper : IConfigurationHelper
 {
-    private static readonly HashSet<string> ReviewModes = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "summary",
-        "comments",
-        "summary-and-comments"
-    };
-
     private static readonly HashSet<string> Severities = new(StringComparer.OrdinalIgnoreCase)
     {
         "low",
@@ -20,7 +13,6 @@ public sealed class ConfigurationHelper : IConfigurationHelper
 
     public ConfigurationHelper()
     {
-        ReviewMode = ParseReviewMode();
         MaxFindings = ParseIntActionInput("max_findings", 10, min: 0, max: 100);
         MinSeverity = ParseMinSeverity();
         IncludeFileContext = ParseBoolActionInput("include_file_context", true);
@@ -37,7 +29,6 @@ public sealed class ConfigurationHelper : IConfigurationHelper
         StepSummaryPath = OptionalFileEnvironmentVariable("GITHUB_STEP_SUMMARY");
     }
 
-    public string ReviewMode { get; }
     public int MaxFindings { get; }
     public string MinSeverity { get; }
     public bool IncludeFileContext { get; }
@@ -60,19 +51,6 @@ public sealed class ConfigurationHelper : IConfigurationHelper
     {
         var key = $"INPUT_{name.Replace('-', '_').ToUpperInvariant()}";
         return GetEnvironmentVariable(key, defaultValue);
-    }
-
-    private string ParseReviewMode()
-    {
-        var reviewMode = GetActionInput("review_mode", "summary-and-comments").Trim();
-        if (!ReviewModes.Contains(reviewMode))
-        {
-            throw new ControlledFailureException(
-                ExitCodes.ConfigurationFailure,
-                "Invalid review_mode. Expected one of: summary, comments, summary-and-comments.");
-        }
-
-        return reviewMode;
     }
 
     private string ParseMinSeverity()

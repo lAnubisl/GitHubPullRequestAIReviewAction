@@ -33,7 +33,7 @@ public sealed class PullRequestReviewApp : IReviewApplication
             review = _reviewFilter.Apply(review, _configuration.MinSeverity, _configuration.MaxFindings, filteredFiles.Select(file => file.FileName));
             await _summaryWriter.WriteAsync(context, filteredFiles, review, cancellationToken);
             var published = await _reviewPublisher.PublishAsync(context, filteredFiles, review, cancellationToken);
-            if (published.FallbackFindings.Count > 0 && _configuration.ReviewMode.Contains("comments", StringComparison.OrdinalIgnoreCase)) _logger.Warning($"{published.FallbackFindings.Count} finding(s) could not be mapped safely to the PR diff and were included in the summary comment.");
+            if (published.FallbackFindings.Count > 0) _logger.Warning($"{published.FallbackFindings.Count} finding(s) could not be mapped safely to the PR diff and were included in the summary comment.");
             if (_configuration.FailOnFindings && review.Findings.Count > 0) throw new ControlledFailureException(ExitCodes.FindingsFailure, "Review findings met fail_on_findings criteria.");
             return ExitCodes.Success;
         }

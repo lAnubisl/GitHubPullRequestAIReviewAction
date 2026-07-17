@@ -23,8 +23,26 @@ public sealed class PromptBuilder : IPromptBuilder
         builder.AppendLine("Prioritize correctness, security, reliability, and maintainability. Avoid style-only comments.");
         builder.AppendLine("You may research public documentation on the web when it helps validate a finding.");
         builder.AppendLine("Do not suggest running tests, builds, package scripts, or project commands unless tool access was explicitly allowed.");
-        builder.AppendLine("Return only machine-readable JSON with this exact shape:");
-        builder.AppendLine("""{"summary":"Concise overall review summary.","findings":[{"severity":"high|medium|low","file":"path/to/file.cs","line":42,"title":"Short finding title","body":"Explain the issue, impact, and suggested fix.","confidence":"high|medium|low"}]}""");
+        builder.AppendLine("Return only one machine-readable JSON object. Do not wrap it in Markdown or add surrounding prose.");
+        builder.AppendLine("Expected JSON structure:");
+        builder.AppendLine("""
+            {
+              "summary": "string",
+              "findings": [
+                {
+                  "severity": "high | medium | low",
+                  "file": "repository-relative path to a changed file",
+                  "line": 1,
+                  "title": "short finding title",
+                  "body": "issue, impact, and suggested fix",
+                  "confidence": "high | medium | low"
+                }
+              ]
+            }
+            """);
+        builder.AppendLine("The object must contain exactly summary and findings. Each finding must contain exactly severity, file, line, title, body, and confidence.");
+        builder.AppendLine("Use an empty findings array when there are no findings. A finding's line must be a positive integer identifying a commentable added or unchanged right-side line in the supplied diff.");
+        AppendResponseExamples(builder);
         builder.AppendLine();
         builder.AppendLine($"Repository: {context.Repository}");
         builder.AppendLine($"Pull request: #{context.PullRequestNumber}");
@@ -72,5 +90,19 @@ public sealed class PromptBuilder : IPromptBuilder
         return builder.Length <= MaxPromptCharacters
             ? builder.ToString()
             : builder.ToString(0, MaxPromptCharacters) + "\n[prompt truncated]";
+    }
+
+    private static void AppendResponseExamples(StringBuilder builder)
+    {
+        builder.AppendLine("The following are format examples only; do not copy their findings unless supported by this pull request.");
+        builder.AppendLine("The summary and findings are published in a pull request summary comment, and each finding is also published as an inline review comment. Make summary useful on its own and map every finding to an exact commentable right-side diff line.");
+        builder.AppendLine("Example with no findings:");
+        builder.AppendLine("""
+            {"summary":"The changes are focused and no actionable issues were found.","findings":[]}
+            """);
+        builder.AppendLine("Example with a finding:");
+        builder.AppendLine("""
+            {"summary":"The change introduces a possible null dereference.","findings":[{"severity":"high","file":"src/Example.cs","line":42,"title":"Guard the nullable value","body":"The value can be null on this path and is dereferenced immediately, which can fail at runtime. Check it for null before use or make the invariant explicit.","confidence":"high"}]}
+            """);
     }
 }

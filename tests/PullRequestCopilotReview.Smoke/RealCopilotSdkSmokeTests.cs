@@ -52,7 +52,6 @@ public sealed class RealCopilotSdkSmokeTests
 
     private sealed record SmokeConfiguration(string Token, string WorkspacePath) : IConfigurationHelper
     {
-        public string ReviewMode => "summary";
         public int MaxFindings => 1;
         public string MinSeverity => "low";
         public bool IncludeFileContext => false;

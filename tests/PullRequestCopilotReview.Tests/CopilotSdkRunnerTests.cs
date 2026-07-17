@@ -86,6 +86,6 @@ public sealed class CopilotSdkRunnerTests
 
     private sealed class Configuration : IConfigurationHelper
     {
-        public string ReviewMode => "summary"; public int MaxFindings => 10; public string MinSeverity => "low"; public bool IncludeFileContext => false; public int FileContextLines => 0; public IReadOnlyList<string> ExcludePaths => []; public string? CopilotModel => null; public string? CopilotExtraInstructions => null; public bool FailOnFindings => false; public string GitHubToken => "github-token"; public string CopilotToken => "copilot-token"; public string Repository => "owner/repo"; public string EventPath => "event.json"; public string Workspace => Environment.CurrentDirectory; public string? StepSummaryPath => null;
+        public int MaxFindings => 10; public string MinSeverity => "low"; public bool IncludeFileContext => false; public int FileContextLines => 0; public IReadOnlyList<string> ExcludePaths => []; public string? CopilotModel => null; public string? CopilotExtraInstructions => null; public bool FailOnFindings => false; public string GitHubToken => "github-token"; public string CopilotToken => "copilot-token"; public string Repository => "owner/repo"; public string EventPath => "event.json"; public string Workspace => Environment.CurrentDirectory; public string? StepSummaryPath => null;
     }
 }

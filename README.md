@@ -2,7 +2,7 @@
 
 A reusable composite GitHub Action that reviews pull request changes with a .NET 10 console app and the [GitHub Copilot SDK for .NET](https://github.com/github/copilot-sdk/tree/main/dotnet).
 
-The action runs for a checked-out `pull_request` event. It reads the event and changed files, asks Copilot for a detailed JSON review, validates that JSON, and publishes a summary, inline comments, or both.
+The action runs for a checked-out `pull_request` event. It reads the event and changed files, asks Copilot for a detailed JSON review, validates that JSON, and publishes both a summary and inline comments.
 
 ## Usage
 
@@ -28,7 +28,6 @@ jobs:
 
       - uses: your-org/pull-request-copilot-review@v1
         with:
-          review_mode: summary-and-comments
           min_severity: medium
           max_findings: 10
         env:
@@ -63,7 +62,6 @@ The reviewer does not modify files, create commits, push branches, or create pul
 
 | Input | Default | Description |
 | --- | --- | --- |
-| `review_mode` | `summary-and-comments` | `summary`, `comments`, or `summary-and-comments`. |
 | `max_findings` | `10` | Maximum number of findings to publish. |
 | `min_severity` | `low` | Lowest severity to publish: `low`, `medium`, or `high`. |
 | `include_file_context` | `true` | Include surrounding checked-out source lines around changed hunks. |
@@ -85,7 +83,7 @@ The action:
 6. Uses the complete `AssistantMessageEvent` returned directly by `SendAndWaitAsync` as the authoritative response. Streaming is observability only: it logs safe intent, tool, usage, complete-message, and progress metadata.
 7. Strictly validates JSON structure and every inline location: paths must be safe changed-file paths and lines must be commentable right-side diff lines. Binary and patchless files cannot receive inline findings.
 8. When validation fails, sends up to two correction prompts in the same session. After three total invalid attempts, or after an SDK error or null response, it fails closed and publishes nothing.
-9. Applies `min_severity` and `max_findings`, writes the step summary, and publishes the requested PR output.
+9. Applies `min_severity` and `max_findings`, writes the step summary, and publishes a pull request summary plus inline findings.
 
 The SDK package supplies and manages its compatible Copilot runtime; the action no longer invokes a standalone `copilot` command, parses CLI JSONL, or installs validation hooks.
 

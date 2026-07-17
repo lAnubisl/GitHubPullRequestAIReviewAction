@@ -13,7 +13,6 @@ public sealed class ReviewActionTests
         "GH_CLI_TOKEN",
         "COPILOT_GITHUB_TOKEN",
         "COPILOT_CLI_TOKEN",
-        "INPUT_REVIEW_MODE",
         "INPUT_MAX_FINDINGS",
         "INPUT_MIN_SEVERITY",
         "INPUT_INCLUDE_FILE_CONTEXT",
@@ -46,7 +45,6 @@ public sealed class ReviewActionTests
     }
 
     [Theory]
-    [InlineData("INPUT_REVIEW_MODE", "invalid", "review_mode")]
     [InlineData("INPUT_MAX_FINDINGS", "not-a-number", "max_findings")]
     [InlineData("INPUT_MIN_SEVERITY", "critical", "min_severity")]
     [InlineData("INPUT_INCLUDE_FILE_CONTEXT", "sometimes", "include_file_context")]
@@ -165,7 +163,12 @@ public sealed class ReviewActionTests
         Assert.Contains("senior code reviewer", prompt);
         Assert.Contains("Do not create, modify, move, or delete files", prompt);
         Assert.Contains("research public documentation on the web", prompt);
-        Assert.Contains("Return only machine-readable JSON", prompt);
+        Assert.Contains("Expected JSON structure:", prompt);
+        Assert.Contains("The object must contain exactly summary and findings", prompt);
+        Assert.Contains("summary and findings are published in a pull request summary comment", prompt);
+        Assert.Contains("Example with no findings:", prompt);
+        Assert.Contains("Example with a finding:", prompt);
+        Assert.Contains("\"findings\":[]", prompt);
         Assert.Contains("Focus on auth boundaries.", prompt);
         Assert.Contains("src/App.cs", prompt);
         Assert.Contains("throw null", prompt);
@@ -258,7 +261,7 @@ public sealed class ReviewActionTests
     public async Task Falls_back_to_summary_when_inline_comment_cannot_map_to_diff()
     {
         var runner = new FakeCommandRunner(new CommandResult(0, "{}", string.Empty));
-        var configuration = TestConfiguration(reviewMode: "summary-and-comments");
+        var configuration = TestConfiguration();
         var publisher = new ReviewPublisher(runner, configuration);
         var review = new ReviewResult("Review done.", new[] { new ReviewFinding("medium", "src/App.cs", 99, "Bug", "Fix it.", "high") });
         var files = new[] { TestFile("src/App.cs", "@@ -1 +1,2 @@\n line\n+new line") };
@@ -268,6 +271,28 @@ public sealed class ReviewActionTests
         Assert.Single(summary.FallbackFindings);
         Assert.Single(runner.Calls);
         Assert.Contains("/issues/7/comments", runner.Calls[0].Arguments[1]);
+    }
+
+    [Fact]
+    public async Task Always_publishes_inline_findings_and_a_summary()
+    {
+        var runner = new FakeCommandRunner(
+            new CommandResult(0, "{}", string.Empty),
+            new CommandResult(0, "{}", string.Empty));
+        var configuration = TestConfiguration();
+        var publisher = new ReviewPublisher(runner, configuration);
+        var review = new ReviewResult(
+            "Review done.",
+            [new ReviewFinding("medium", "src/App.cs", 2, "Bug", "Fix it.", "high")]);
+        var files = new[] { TestFile("src/App.cs", "@@ -1 +1,2 @@\n line\n+new line") };
+
+        var summary = await publisher.PublishAsync(TestContext(), files, review);
+
+        Assert.Equal(1, summary.InlineCommentsPublished);
+        Assert.Empty(summary.FallbackFindings);
+        Assert.Equal(2, runner.Calls.Count);
+        Assert.Contains("/pulls/7/comments", runner.Calls[0].Arguments[1]);
+        Assert.Contains("/issues/7/comments", runner.Calls[1].Arguments[1]);
     }
 
     [Fact]
@@ -291,7 +316,6 @@ public sealed class ReviewActionTests
             "Review done.",
             [new ReviewFinding("high", "src/App.cs", 2, "Bug", "Fix it.", "high")]);
         var configuration = TestConfiguration(
-            reviewMode: "summary",
             minSeverity: "medium",
             includeContext: false,
             eventPath: eventPath,
@@ -317,7 +341,6 @@ public sealed class ReviewActionTests
     }
 
     private static IConfigurationHelper TestConfiguration(
-        string reviewMode = "summary-and-comments",
         string minSeverity = "low",
         bool includeContext = true,
         int maxFindings = 10,
@@ -333,7 +356,6 @@ public sealed class ReviewActionTests
         {
             ["GH_CLI_TOKEN"] = githubToken,
             ["COPILOT_GITHUB_TOKEN"] = copilotToken,
-            ["INPUT_REVIEW_MODE"] = reviewMode,
             ["INPUT_MAX_FINDINGS"] = maxFindings.ToString(),
             ["INPUT_MIN_SEVERITY"] = minSeverity,
             ["INPUT_INCLUDE_FILE_CONTEXT"] = includeContext.ToString(),

@@ -2,7 +2,6 @@ namespace PullRequestCopilotReview.Interfaces;
 
 public interface IConfigurationHelper
 {
-    string ReviewMode { get; }
     int MaxFindings { get; }
     string MinSeverity { get; }
     bool IncludeFileContext { get; }

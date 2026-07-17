@@ -19,7 +19,6 @@ jobs:
 
       - uses: your-org/pull-request-copilot-review@v1
         with:
-          review_mode: summary-and-comments
           min_severity: medium
           max_findings: 10
         env:
