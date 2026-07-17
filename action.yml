@@ -7,7 +7,7 @@ branding:
 
 inputs:
   review_mode:
-    description: Publish a summary comment, inline comments, or both. Allowed values: summary, comments, summary-and-comments.
+    description: "Publish a summary comment, inline comments, or both. Allowed values: summary, comments, summary-and-comments."
     required: false
     default: summary-and-comments
   max_findings:
@@ -15,7 +15,7 @@ inputs:
     required: false
     default: "10"
   min_severity:
-    description: Lowest severity to publish. Allowed values: low, medium, high.
+    description: "Lowest severity to publish. Allowed values: low, medium, high."
     required: false
     default: low
   include_file_context:
