@@ -31,6 +31,9 @@ public sealed class GitHubCopilotSdkClient : ICopilotSdkClient
         => new()
         {
             Mode = CopilotClientMode.Empty,
+            BaseDirectory = Path.Combine(
+                Path.GetTempPath(),
+                $"pull-request-copilot-review-{Environment.ProcessId}-{Guid.NewGuid():N}"),
             GitHubToken = options.GitHubToken,
             UseLoggedInUser = false,
             WorkingDirectory = options.WorkingDirectory,

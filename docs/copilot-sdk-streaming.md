@@ -14,4 +14,4 @@ The first request uses the review prompt. On a validation error, the reviewer se
 
 ## Security boundary
 
-The SDK client runs in `CopilotClientMode.Empty` with the checked-out pull request revision as its working directory and explicit read-only built-in tools. It disables file hooks, configuration discovery, repository instructions, skills, host Git context, memory, session storage, and infinite sessions. The permission handler approves only read and URL requests.
+The SDK client runs in `CopilotClientMode.Empty` with an isolated temporary Copilot base directory, the checked-out pull request revision as its working directory, and explicit read-only built-in tools. The temporary base directory satisfies empty mode's explicit persistence-location requirement without using the runner's normal Copilot home. The session disables file hooks, configuration discovery, repository instructions, skills, host Git context, memory, session storage, and infinite sessions. The permission handler approves only read and URL requests.

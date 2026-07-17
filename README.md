@@ -91,7 +91,7 @@ The SDK package supplies and manages its compatible Copilot runtime; the action 
 
 ### Review-only SDK configuration
 
-The SDK client uses `CopilotClientMode.Empty` and the checked-out repository as its working directory. This lets the read-only SDK tools inspect source files from the pull request revision. The session disables configuration discovery, repository custom instructions, file hooks, skills, host Git context, memory, cross-session storage, and infinite-session persistence.
+The SDK client uses `CopilotClientMode.Empty`, an isolated temporary Copilot base directory, and the checked-out repository as its working directory. This lets the read-only SDK tools inspect source files from the pull request revision while satisfying the SDK's explicit persistence-location requirement for empty mode. The session disables configuration discovery, repository custom instructions, file hooks, skills, host Git context, memory, cross-session storage, and infinite-session persistence.
 
 Only these built-in tools are exposed:
 

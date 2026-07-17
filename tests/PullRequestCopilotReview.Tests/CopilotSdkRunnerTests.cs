@@ -10,13 +10,15 @@ public sealed class CopilotSdkRunnerTests
     private static readonly PullRequestFile[] Files = [new("src/App.cs", "modified", 1, 0, "@@ -41 +42 @@\n+code", new DiffParser().Parse("@@ -41 +42 @@\n+code"), null)];
 
     [Fact]
-    public void Builds_an_empty_mode_streaming_sdk_session_with_persistence_disabled()
+    public async Task Builds_an_empty_mode_streaming_sdk_session_with_persistence_disabled()
     {
         var sdkClient = new GitHubCopilotSdkClient();
         var options = new CopilotSdkSessionOptions("token", Path.GetFullPath("workspace"), "gpt-test", ["view"]);
         var clientOptions = sdkClient.BuildClientOptions(options);
         var session = sdkClient.BuildSessionConfig(options);
         Assert.Equal(CopilotClientMode.Empty, clientOptions.Mode);
+        Assert.StartsWith(Path.GetTempPath(), clientOptions.BaseDirectory, StringComparison.Ordinal);
+        await using var client = new CopilotClient(clientOptions);
         Assert.True(session.Streaming);
         Assert.False(session.EnableFileHooks);
         Assert.False(session.EnableSessionStore);
