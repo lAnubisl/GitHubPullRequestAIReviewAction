@@ -2,7 +2,7 @@ name: AI Pull Request Review
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled]
 
 permissions:
   contents: read
@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   ai-review:
+    if: github.event.action != 'labeled' || github.event.label.name == 'ai_review'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6

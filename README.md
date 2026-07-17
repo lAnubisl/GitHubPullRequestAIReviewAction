@@ -11,7 +11,7 @@ name: AI Pull Request Review
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled]
 
 permissions:
   contents: read
@@ -19,6 +19,7 @@ permissions:
 
 jobs:
   ai-review:
+    if: github.event.action != 'labeled' || github.event.label.name == 'ai_review'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -34,6 +35,10 @@ jobs:
           GH_CLI_TOKEN: ${{ secrets.GH_CLI_TOKEN }}
           COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
 ```
+
+The `ai_review` label provides an on-demand review trigger. Other labels do not
+start the review job. To request another label-triggered review later, remove
+the label and add it again.
 
 ## Required secrets
 
